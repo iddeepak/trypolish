@@ -1,11 +1,14 @@
-import './App.css';
+// src/App.js
+import React from 'react';
+import { ModeProvider } from './contexts/ModeContext';
+import Navbar from './components/Navbar/Navbar';
+import HomePage from './pages/HomePage';
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      
-    </div>
+    <ModeProvider>
+      <Navbar />
+      <HomePage />
+    </ModeProvider>
   );
 }
-
-export default App;
