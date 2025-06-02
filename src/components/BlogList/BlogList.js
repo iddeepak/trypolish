@@ -1,12 +1,14 @@
 // src/components/BlogList/BlogList.js
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useMode } from '../../contexts/ModeContext';
 import BlogCard from '../BlogCard/BlogCard';
 
-// 30 topics for “Simple” mode with corrected escaping for backticks
+// (Same arrays for simplePosts and funnyPosts as before, each with 30 entries. 
+// For brevity, I'm showing only the first few items; include all 30 as in your previous code.)
+
 const simplePosts = [
   {
     id: 1,
@@ -521,7 +523,6 @@ This is your “entire blog” content for post #30 in Simple mode.
   },
 ];
 
-// 30 topics for “Funny” mode with humor and backticks escaped
 const funnyPosts = [
   {
     id: 1,
@@ -595,7 +596,7 @@ const funnyPosts = [
     id: 5,
     title: '😂 Version Control Ki Dhoom',
     excerpt:
-      'Commit karte raho, branches banao, aur conflict se bachke rehna—warna code ka drama dekhna padega!',
+      'Commit karte raho, branches banao, aur conflict se bachke rehna—varna code ka drama dekhna padega!',
     imageUrl: 'https://picsum.photos/seed/funny5/400/200',
     content: `
 ## 😂 Version Control Ki Dhoom
@@ -636,7 +637,7 @@ const funnyPosts = [
 
 1. **Tests Pehle**: Pehle likho test, tabhi pata chale bug hero hai ya villain.
 2. **Chhote Steps**: Ek saath sab refactor mat karo, warna code ka “Pataka” phat sakta hai!
-3. **Tool Ka Use**: Linters aur IDE refactor tools se hero bano, villain nahi.
+3. **Tool Ka Use**: Linters aur IDE refactoring tools se hero bano, villain nahi.
 4. **Functionality Maintain**: Har step ke baad test run karo—varna code “drama” karega!
 
 (Yeh poora blog content hai Funny mode post #7 ke liye.)
@@ -911,7 +912,7 @@ const funnyPosts = [
 - **Use Cases**: Form handling, data fetching, localStorage sync.
 - **Example**: \`function useWindowWidth() { const [w, setW] = useState(window.innerWidth); … }\`.
 
-(Yeh poora ब्लॉग content hai Funny mode post #23 ke liye.)
+(Yeh poora blog content hai Funny mode post #23 ke liye.)
     `.trim(),
   },
   {
@@ -1039,10 +1040,44 @@ export default function BlogList() {
   const { mode } = useMode();
   const posts = mode === 'simple' ? simplePosts : funnyPosts;
 
+  // === PAGINATION LOGIC ===
+  const postsPerPage = 9; // show 9 cards per page
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+
+  // State: current page (1-based)
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Compute index range for current page
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const paginatedPosts = posts.slice(startIndex, endIndex);
+
+  // Handler: go to a specific page
+  const goToPage = (pageNum) => {
+    if (pageNum < 1 || pageNum > totalPages) return;
+    setCurrentPage(pageNum);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handler: previous page
+  const prevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  // Handler: next page
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      {/* GRID OF CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => {
+        {paginatedPosts.map((post) => {
           const basePath = mode === 'simple' ? '/simple' : '/funny';
           return (
             <motion.div
@@ -1050,7 +1085,7 @@ export default function BlogList() {
               className="h-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: post.id * 0.05 }}
+              transition={{ duration: 0.4, delay: (post.id % postsPerPage) * 0.05 }}
             >
               <Link to={`${basePath}/${post.id}`} className="h-full">
                 <BlogCard
@@ -1062,6 +1097,56 @@ export default function BlogList() {
             </motion.div>
           );
         })}
+      </div>
+
+      {/* PAGINATION CONTROLS */}
+      <div className="flex justify-center items-center mt-8 space-x-2">
+        {/* Previous button */}
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          className={`
+            px-3 py-1 rounded-md
+            ${currentPage === 1
+              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+              : 'bg-orange-500 text-white hover:bg-orange-600'}
+          `}
+        >
+          Previous
+        </button>
+
+        {/* Page number buttons */}
+        {Array.from({ length: totalPages }, (_, index) => {
+          const pageNum = index + 1;
+          return (
+            <button
+              key={pageNum}
+              onClick={() => goToPage(pageNum)}
+              className={`
+                px-3 py-1 rounded-md
+                ${currentPage === pageNum
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+              `}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
+
+        {/* Next button */}
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages}
+          className={`
+            px-3 py-1 rounded-md
+            ${currentPage === totalPages
+              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+              : 'bg-orange-500 text-white hover:bg-orange-600'}
+          `}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
