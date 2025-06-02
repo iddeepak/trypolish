@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 1) Disable text selection and force arrow cursor globally */
+body {
+  @apply select-none cursor-default;
+}
+
+/* 2) Re-enable pointer cursor on interactive elements */
+button,
+a {
+  @apply cursor-pointer;
+}
+
+/* (Optional) If you still want to allow selecting specific text (e.g., inside inputs), 
+   override where needed, e.g.: 
+input,
+textarea {
+  @apply select-text;
+}
+*/
+
+/* Global font override */
 body {
   font-family: 'Poppins', sans-serif;
 }
